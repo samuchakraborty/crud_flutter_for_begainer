@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:login_registartion/home_screen.dart';
+import 'package:login_registartion/services/auth_service.dart';
 import 'package:login_registartion/widgets/custom_button.dart';
 import 'package:login_registartion/widgets/custom_text_field.dart';
 import 'package:login_registartion/widgets/login_screen.dart';
@@ -14,6 +17,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController mobileNumberController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -63,10 +67,57 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 const SizedBox(
                   height: 20,
                 ),
-                CustomButton(
-                  onPressed: () {},
-                  buttonName: 'Registration',
-                ),
+                isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : CustomButton(
+                        onPressed: () async {
+                          setState(() {
+                            isLoading = true;
+                          });
+                          SystemChannels.textInput.invokeMethod('TextInput.hide');
+                          await AuthServices()
+                              .getRegistration(
+                            name: firstNameController.text,
+                            mobileNumber: mobileNumberController.text,
+                            pin: passwordController.text,
+                          )
+                              .then(
+                            (value) {
+                              setState(() {
+                                isLoading = false;
+                              });
+                              if(value.contains("Could Not Registration") ==false) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const HomeScreen(),
+                                  ),
+                                );
+
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    backgroundColor: Colors.green,
+                                    elevation: 0,
+                                    content: Text(
+                                        "Registration Successfully Save"),
+                                  ),
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    backgroundColor: Colors.red,
+                                    elevation: 0,
+                                    content: Text(
+                                        "Registration Failed Please Try Again !"),
+                                  ),
+                                );
+                              }
+                            },
+                            onError: (error) {},
+                          );
+                        },
+                        buttonName: 'Registration',
+                      ),
                 const SizedBox(
                   height: 20,
                 ),
