@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../services/customer_services.dart';
 import 'custom_drawer.dart';
+import 'customer_details.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({
@@ -40,6 +41,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   return Card(
                     margin: const EdgeInsets.all(10),
                     child: ListTile(
+                      onTap: () async {
+                        final data = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                CustomerDetailsScreen(data: snapshot.data[i]),
+                          ),
+                        );
+                        if (data == true) {
+                          setState(() {});
+                        }
+                      },
                       title: Text('Name:  ${snapshot.data[i]['cname']}'),
                       subtitle: Text('Mobile:  ${snapshot.data[i]['cmobile']}'),
                       trailing: IconButton(
