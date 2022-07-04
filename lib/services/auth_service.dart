@@ -34,4 +34,21 @@ class AuthServices {
     print(response.body);
     return response.body;
   }
+
+  Future<dynamic> getProfile(
+      {required String mobileNumber, required String pin}) async {
+    print('....');
+    http.Response response = await http.post(Uri.parse(profileUrl),
+        body: ({'p_si_mobile': mobileNumber, 'p_si_pin': pin}),
+        headers: {
+          'Content-type': 'application/x-www-form-urlencoded',
+          'Accept': 'application/json',
+        });
+    print(response.body);
+    return response.body;
+  }
+
+
+
 }
+

@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:login_registartion/home_screen.dart';
-import 'package:login_registartion/services/auth_service.dart';
 import 'package:login_registartion/widgets/custom_button.dart';
 import 'package:login_registartion/widgets/custom_text_field.dart';
-import 'package:login_registartion/widgets/login_screen.dart';
 
-class RegistrationScreen extends StatefulWidget {
-  const RegistrationScreen({Key? key}) : super(key: key);
+import '../services/auth_service.dart';
+import 'home_screen.dart';
+
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({Key? key}) : super(key: key);
 
   @override
-  State<RegistrationScreen> createState() => _RegistrationScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _RegistrationScreenState extends State<RegistrationScreen> {
+class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController mobileNumberController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+
   bool isLoading = false;
 
   @override
@@ -24,7 +25,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Registration Screen'),
+          title: const Text('Login Screen'),
           centerTitle: true,
         ),
         body: SingleChildScrollView(
@@ -34,16 +35,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const SizedBox(
-                  height: 20,
-                ),
-                CustomTextField(
-                  labelName: 'First Name',
-                  textInputType: TextInputType.name,
-                  readOnly: false,
-                  controller: firstNameController,
-                  textInputAction: TextInputAction.next,
-                ),
                 const SizedBox(
                   height: 20,
                 ),
@@ -71,71 +62,66 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     ? const Center(child: CircularProgressIndicator())
                     : CustomButton(
                         onPressed: () async {
-                          setState(() {
-                            isLoading = true;
-                          });
-                          SystemChannels.textInput.invokeMethod('TextInput.hide');
+                          SystemChannels.textInput
+                              .invokeMethod('TextInput.hide');
                           await AuthServices()
-                              .getRegistration(
-                            name: firstNameController.text,
+                              .getLogin(
                             mobileNumber: mobileNumberController.text,
                             pin: passwordController.text,
                           )
                               .then(
                             (value) {
-                              setState(() {
-                                isLoading = false;
-                              });
-                              if(value.contains("Could Not Registration") ==false) {
+                              print(value);
+
+                              if (value == "Data Matched") {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => const HomeScreen(),
+                                    builder: (context) => HomeScreen(
+                                      mobileNumber: mobileNumberController.text,
+                                      password: passwordController.text,
+                                    ),
                                   ),
                                 );
-
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                     backgroundColor: Colors.green,
                                     elevation: 0,
-                                    content: Text(
-                                        "Registration Successfully Save"),
+                                    content: Text("Login Successfully"),
                                   ),
                                 );
+
+                                // Navigator.pushNamed(context, '/home');
                               } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    backgroundColor: Colors.red,
-                                    elevation: 0,
-                                    content: Text(
-                                        "Registration Failed Please Try Again !"),
-                                  ),
-                                );
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(const SnackBar(
+                                  backgroundColor: Colors.red,
+                                  elevation: 0,
+                                  content: Text(
+                                      "Mobile Number or Password not matched !"),
+                                ));
                               }
                             },
-                            onError: (error) {},
+                            onError: (error) {
+                              print(error);
+                            },
                           );
                         },
-                        buttonName: 'Registration',
+                        buttonName: 'Login',
                       ),
                 const SizedBox(
                   height: 20,
                 ),
                 GestureDetector(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const LoginScreen(),
-                      ),
-                    );
+                    Navigator.pop(context);
                   },
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: const [
-                      Text('Are you registered? '),
+                      Text('Are you not registered? '),
                       Text(
-                        'Login',
+                        'Sign up',
                         style: TextStyle(color: Colors.blue),
                       ),
                     ],
